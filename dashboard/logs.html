@@ -9,111 +9,56 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
   <style>
-    body {
-      font-family: Inter, sans-serif;
-      background: #f3f4f6;
-      color: #111827;
-      padding: 20px;
-      transition: background 0.3s, color 0.3s;
-      overflow-x: hidden;
-    }
-    [data-theme="dark"] body {
-      background: #0B1B2B;
-      color: #ffffff;
-    }
-    .card {
-      background: white;
-      padding: 16px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-      transition: all 0.3s;
-    }
-    [data-theme="dark"] .card {
-      background: #102432;
-      color: white;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    }
-    .fire-entry {
-      background: #fff5f5;
-      border: 1px solid #fecaca;
-    }
-    [data-theme="dark"] .fire-entry {
-      background: #3a2326;
-      border-color: rgba(244,122,31,0.25);
-    }
-    .log-entry {
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 12px;
-      transition: transform 0.2s ease-in-out;
-    }
-    .log-entry:hover {
-      transform: scale(1.01);
-    }
-    [data-theme="dark"] .log-entry {
-      border-color: rgba(255,255,255,0.1);
-    }
+    body { font-family: Inter, sans-serif; background: #f3f4f6; color: #111827;
+      padding: 20px; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
+    [data-theme="dark"] body { background: #0B1B2B; color: #ffffff; }
 
-    /* Filter bar */
-    .filter-bar select {
-      outline: none;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      background: white;
-      color: #111827;
-      transition: background 0.3s, color 0.3s, border 0.3s;
-    }
-    [data-theme="dark"] .filter-bar select {
-      background: #1e293b;
-      color: #fff;
-      border: 1px solid #475569;
-    }
+    .card { background: white; padding: 16px; border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: all 0.3s; }
+    [data-theme="dark"] .card { background: #102432; color: white; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
 
-    /* Wider layout */
-    .page-container {
-      width: 100%;
-      max-width: 1600px;
-      margin: 0 auto;
-    }
+    .fire-entry { background: #fff5f5; border: 1px solid #fecaca; }
+    [data-theme="dark"] .fire-entry { background: #3a2326; border-color: rgba(244,122,31,0.25); }
 
-    /* Scrollable logs container */
-    #log-content {
-      max-height: calc(100vh - 250px);
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: #999 transparent;
-    }
-    #log-content::-webkit-scrollbar {
-      width: 8px;
-    }
-    #log-content::-webkit-scrollbar-thumb {
-      background-color: #aaa;
-      border-radius: 6px;
-    }
-    #log-content::-webkit-scrollbar-track {
-      background: transparent;
-    }
+    .log-entry { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;
+      transition: transform 0.2s ease-in-out; }
+    .log-entry:hover { transform: scale(1.01); }
+    [data-theme="dark"] .log-entry { border-color: rgba(255,255,255,0.1); }
+
+    .filter-bar select { outline: none; padding: 8px 12px; border-radius: 8px;
+      border: 1px solid #d1d5db; background: white; color: #111827;
+      transition: background 0.3s, color 0.3s, border 0.3s; }
+    [data-theme="dark"] .filter-bar select { background: #1e293b; color: #fff; border: 1px solid #475569; }
+
+    .page-container { width: 100%; max-width: 1600px; margin: 0 auto; }
+
+    #log-content { max-height: calc(100vh - 250px); overflow-y: auto;
+      scrollbar-width: thin; scrollbar-color: #999 transparent; }
+    #log-content::-webkit-scrollbar { width: 8px; }
+    #log-content::-webkit-scrollbar-thumb { background-color: #aaa; border-radius: 6px; }
+    #log-content::-webkit-scrollbar-track { background: transparent; }
   </style>
 </head>
 
 <body data-theme="">
   <div class="page-container">
-    <!-- HEADER -->
+
+    <!-- Header -->
     <div class="card mb-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <img src="./logo.png" class="w-10 h-10 rounded" alt="logo" />
         <div>
           <div class="font-bold text-xl">🔥 Fire Logs</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Real-time event viewer</div>
+          <div class="text-sm text-gray-500">Real-time event viewer</div>
         </div>
       </div>
-      <div class="text-right">
-        <div id="current-time" class="text-sm font-medium text-gray-600 dark:text-gray-300">--</div>
+      <div class="flex items-center gap-4">
+        <div id="current-time" class="text-sm font-medium text-gray-600">--</div>
+        <a href="/" class="text-sm px-3 py-1 rounded bg-gray-100 hover:bg-gray-200">← Back</a>
       </div>
     </div>
 
-    <!-- FILTER BAR -->
+    <!-- Filter bar -->
     <div class="card mb-4 filter-bar flex flex-col sm:flex-row gap-3 justify-between items-center">
       <div class="flex gap-3 w-full sm:w-auto">
         <select id="camera-filter" class="flex-1 text-sm w-56">
@@ -127,88 +72,78 @@
       </div>
     </div>
 
-    <!-- LOGS -->
+    <!-- Logs -->
     <div id="log-content" class="card">
-      <div class="text-sm text-gray-500 italic">Loading logs from Firestore...</div>
+      <div class="text-sm text-gray-500 italic">Loading logs…</div>
     </div>
+
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { initFirebase }          from "./firebase-init.js";
+    import { signInAnonymously }     from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { collection, onSnapshot, orderBy, query }
+      from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC34U33lGP_rIzjR-dnTtLLkzdmLrSDKR8",
-      authDomain: "wildfire-monitoring-1ccca.firebaseapp.com",
-      projectId: "wildfire-monitoring-1ccca",
-      storageBucket: "wildfire-monitoring-1ccca.appspot.com",
-      messagingSenderId: "33997938009",
-      appId: "1:33997938009:web:eee397f8d518ca72434048"
-    };
+    // ── Init (config from service_account_key.json via app.py) ──
+    const { auth, db, config } = await initFirebase();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    signInAnonymously(auth);
+    // Logs page uses anonymous auth so anyone with the link can view history
+    await signInAnonymously(auth);
 
-    const container = document.getElementById('log-content');
-    const camFilter = document.getElementById('camera-filter');
-    const statusFilter = document.getElementById('status-filter');
+    const container  = document.getElementById("log-content");
+    const camFilter  = document.getElementById("camera-filter");
+    const statusFilter = document.getElementById("status-filter");
 
     const q = query(
-      collection(db, 'artifacts', firebaseConfig.projectId, 'public', 'data', 'fire_logs'),
-      orderBy('timestamp_ms', 'desc')
+      collection(db, "artifacts", config.projectId, "public", "data", "fire_logs"),
+      orderBy("timestamp_ms", "desc")
     );
 
     let allLogs = [];
 
     function renderLogs() {
-      const selectedCam = camFilter.value;
-      const selectedStatus = statusFilter.value;
+      const selCam    = camFilter.value;
+      const selStatus = statusFilter.value;
       let filtered = [...allLogs];
 
-      if (selectedCam) filtered = filtered.filter(l => l.camera_location === selectedCam);
-      if (selectedStatus === 'fire') filtered = filtered.filter(l => String(l.detection_class).toLowerCase().includes('fire'));
-      if (selectedStatus === 'safe') filtered = filtered.filter(l => !String(l.detection_class).toLowerCase().includes('fire'));
+      if (selCam) filtered = filtered.filter(l => l.camera_location === selCam);
+      if (selStatus === "fire") filtered = filtered.filter(l => String(l.detection_class).toLowerCase().includes("fire"));
+      if (selStatus === "safe") filtered = filtered.filter(l => !String(l.detection_class).toLowerCase().includes("fire"));
 
-      // 🔥 Fire first, then rest by time
       filtered.sort((a, b) => {
-        const aFire = String(a.detection_class).toLowerCase().includes('fire') && String(a.status || '') !== 'resolved';
-        const bFire = String(b.detection_class).toLowerCase().includes('fire') && String(b.status || '') !== 'resolved';
-        if (aFire && !bFire) return -1;
-        if (!aFire && bFire) return 1;
+        const af = String(a.detection_class).toLowerCase().includes("fire") && String(a.status||"") !== "resolved";
+        const bf = String(b.detection_class).toLowerCase().includes("fire") && String(b.status||"") !== "resolved";
+        if (af && !bf) return -1; if (!af && bf) return 1;
         return (b.timestamp_ms || 0) - (a.timestamp_ms || 0);
       });
 
-      container.innerHTML = '';
+      container.innerHTML = "";
       if (filtered.length === 0) {
         container.innerHTML = `<div class="text-sm text-gray-500 italic">No matching logs.</div>`;
         return;
       }
 
-      const list = document.createElement('div');
-      list.className = 'space-y-3';
+      const list = document.createElement("div");
+      list.className = "space-y-3";
 
       filtered.forEach(d => {
-        const isFire = String(d.detection_class).toLowerCase().includes('fire') && String(d.status || '') !== 'resolved';
-        const div = document.createElement('div');
-        div.className = `log-entry ${isFire ? 'fire-entry' : ''}`;
-
+        const isFire = String(d.detection_class).toLowerCase().includes("fire") && String(d.status||"") !== "resolved";
+        const div    = document.createElement("div");
+        div.className = `log-entry ${isFire ? "fire-entry" : ""}`;
         div.innerHTML = `
           <div class="flex justify-between">
             <div>
-              <strong>${isFire ? '🔥 ' : ''}${d.camera_location || 'Unknown'}</strong>
-              <div class="text-xs text-gray-500 dark:text-gray-400">${d.timestamp_str || new Date(d.timestamp_ms).toLocaleString()}</div>
+              <strong>${isFire ? "🔥 " : ""}${d.camera_location || "Unknown"}</strong>
+              <div class="text-xs text-gray-500">${d.timestamp_str || new Date(d.timestamp_ms).toLocaleString()}</div>
             </div>
-            <div class="text-sm font-medium ${isFire ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}">
-              ${d.detection_class}${String(d.status || '').toLowerCase() === 'resolved' ? ' (resolved)' : ''}
+            <div class="text-sm font-medium ${isFire ? "text-red-600" : "text-green-600"}">
+              ${d.detection_class}${String(d.status||"").toLowerCase()==="resolved" ? " (resolved)" : ""}
             </div>
           </div>
-          <div class="text-xs text-gray-600 dark:text-gray-300 mt-2">
+          <div class="text-xs text-gray-600 mt-2">
             Coords: ${d.coords_y}, ${d.coords_x} | Prob: ${d.fire_probability}
-          </div>
-        `;
+          </div>`;
         list.appendChild(div);
       });
 
@@ -218,23 +153,24 @@
     onSnapshot(q, (snapshot) => {
       allLogs = [];
       snapshot.forEach(doc => allLogs.push(doc.data()));
+
       const uniqueCams = [...new Set(allLogs.map(d => d.camera_location).filter(Boolean))].sort();
       camFilter.innerHTML = '<option value="">All Cameras</option>' +
-        uniqueCams.map(c => `<option value="${c}">${c}</option>`).join('');
+        uniqueCams.map(c => `<option value="${c}">${c}</option>`).join("");
+
       renderLogs();
     });
 
-    camFilter.addEventListener('change', renderLogs);
-    statusFilter.addEventListener('change', renderLogs);
+    camFilter.addEventListener("change", renderLogs);
+    statusFilter.addEventListener("change", renderLogs);
 
-    // Global theme sync
-    const globalTheme = localStorage.getItem('fmd_theme') || 'light';
-    document.body.setAttribute('data-theme', globalTheme === 'dark' ? 'dark' : '');
+    // Theme sync with main dashboard
+    const globalTheme = localStorage.getItem("fmd_theme") || "light";
+    document.body.setAttribute("data-theme", globalTheme === "dark" ? "dark" : "");
 
-    // Live clock
-    const timeEl = document.getElementById('current-time');
+    // Clock
     setInterval(() => {
-      timeEl.textContent = new Date().toLocaleString();
+      document.getElementById("current-time").textContent = new Date().toLocaleString();
     }, 1000);
   </script>
 </body>
