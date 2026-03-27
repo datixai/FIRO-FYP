@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login | Fire Monitoring</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
+
+  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+
+    <!-- LOGO -->
+    <div class="flex justify-center mb-4">
+      <img src="./logo.png" alt="Logo" class="w-20 h-20 rounded">
+    </div>
+
+    <h2 id="form-title"
+        class="text-2xl font-bold text-center mb-6 text-green-700">
+      Fire Monitoring Login
+    </h2>
+
+    <form id="auth-form" class="space-y-4">
+      <input
+        id="email"
+        type="email"
+        placeholder="Email"
+        class="w-full px-4 py-2 border rounded"
+        required
+      />
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Password (min 6 chars)"
+        class="w-full px-4 py-2 border rounded"
+        required
+      />
+
+      <button
+        id="submit-btn"
+        type="submit"
+        class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+        Login
+      </button>
+    </form>
+
+    <p class="text-center text-sm mt-4">
+      <span id="toggle-text">Don’t have an account?</span>
+      <button id="toggle-btn" class="text-green-600 font-semibold ml-1">
+        Sign Up
+      </button>
+    </p>
+
+    <p id="error" class="text-red-500 text-sm mt-3 text-center"></p>
+  </div>
+
+  <!-- ================= FIREBASE AUTH ================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      getAuth,
+      setPersistence,
+      browserSessionPersistence,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    /* ================= FIREBASE CONFIG ================= */
+    const firebaseConfig = {
+      apiKey: "AIzaSyC34U33lGP_rIzjR-dnTtLLkzdmLrSDKR8",
+      authDomain: "wildfire-monitoring-1ccca.firebaseapp.com",
+      projectId: "wildfire-monitoring-1ccca",
+      storageBucket: "wildfire-monitoring-1ccca.appspot.com",
+      messagingSenderId: "33997938009",
+      appId: "1:33997938009:web:eee397f8d518ca72434048"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    /* ================= ELEMENTS ================= */
+    const form = document.getElementById("auth-form");
+    const toggleBtn = document.getElementById("toggle-btn");
+    const toggleText = document.getElementById("toggle-text");
+    const title = document.getElementById("form-title");
+    const submitBtn = document.getElementById("submit-btn");
+    const errorEl = document.getElementById("error");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+
+    let isSignup = false;
+
+    /* ================= SESSION FIX ================= */
+    // User will be logged out when browser/tab closes
+    setPersistence(auth, browserSessionPersistence);
+
+    /* ================= AUTH GUARD ================= */
+    onAuthStateChanged(auth, (user) => {
+      if (user && !user.isAnonymous) {
+        window.location.replace("index.html");
+      }
+    });
+
+    /* ================= FORM SUBMIT ================= */
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorEl.textContent = "";
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      try {
+        if (isSignup) {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+
+        window.location.replace("index.html");
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    });
+
+    /* ================= TOGGLE LOGIN / SIGNUP ================= */
+    toggleBtn.addEventListener("click", () => {
+      isSignup = !isSignup;
+      errorEl.textContent = "";
+
+      if (isSignup) {
+        title.textContent = "Create Account";
+        submitBtn.textContent = "Sign Up";
+        toggleText.textContent = "Already have an account?";
+        toggleBtn.textContent = "Login";
+      } else {
+        title.textContent = "Fire Monitoring Login";
+        submitBtn.textContent = "Login";
+        toggleText.textContent = "Don’t have an account?";
+        toggleBtn.textContent = "Sign Up";
+      }
+    });
+  </script>
+</body>
+</html>

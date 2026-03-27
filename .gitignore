@@ -1,0 +1,208 @@
+# ============================================================
+# FIRO-FYP .gitignore
+# ============================================================
+
+# ------------------------------------------------------------
+# 🔐 SECRETS & CREDENTIALS  (NEVER commit these)
+# ------------------------------------------------------------
+dashboard/service_account_key.json
+**/service_account_key.json
+**/serviceAccountKey.json
+**/service-account*.json
+*.json.secret
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+google-credentials.json
+firebase-adminsdk*.json
+
+# ------------------------------------------------------------
+# 🐍 Python
+# ------------------------------------------------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.virtualenv/
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+wheels/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+parts/
+var/
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+htmlcov/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*.ipynb
+
+# pyenv
+.python-version
+
+# Celery
+celerybeat-schedule
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ------------------------------------------------------------
+# 🖥️  IDEs & Editors
+# ------------------------------------------------------------
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*#
+.#*
+
+# Spyder
+.spyderproject.db
+.spyproject/
+
+# Rope
+.ropeproject/
+
+# ------------------------------------------------------------
+# 💻 OS Files
+# ------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+
+# ------------------------------------------------------------
+# 📦 Node / Frontend tooling (if ever added)
+# ------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.yarn/
+.pnp.*
+dist/
+.next/
+.nuxt/
+.cache/
+
+# ------------------------------------------------------------
+# 📋 Logs & Temp Files
+# ------------------------------------------------------------
+*.log
+logs/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+
+# ------------------------------------------------------------
+# 🤖 ML / Data Files (large binaries — use Git LFS if needed)
+# ------------------------------------------------------------
+# Uncomment below lines if you do NOT want to commit the TFLite model
+# (it is ~8.5 MB — borderline for GitHub's 100 MB limit)
+# Models Source Files/*.tflite
+
+# Raw datasets (never commit large datasets)
+data/
+datasets/
+*.csv
+*.parquet
+*.h5
+*.hdf5
+# Keep .tflite checked in (it's your deployable model artifact)
+!*.tflite
+
+# Training checkpoints
+checkpoints/
+saved_model/
+runs/
+
+# ------------------------------------------------------------
+# 🔧 Miscellaneous
+# ------------------------------------------------------------
+.sass-cache/
+*.pid
+*.seed
+*.pid.lock
+.grunt/
+.lock-wscroll
+.cache-loader/
+report.json

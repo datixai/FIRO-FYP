@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fire Monitoring Department</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    :root {
+      --logo-green: #2B8E4E;
+      --logo-orange: #F47A1F;
+      --bg-light: #f3f4f6;
+      --bg-dark: #061226;
+      --card-light: #ffffff;
+      --card-dark: #0B1B2B;
+      --card-dark-2: #102432;
+      --text-light: #0f172a;
+      --text-dark: #ffffff;
+      --border-light: #e6e9ee;
+      --border-dark: rgba(255, 255, 255, 0.06);
+      --btn-light-bg: #f3f4f6;
+      --btn-light-border: #d1d5db;
+      --btn-dark-bg: #15232e;
+      --btn-dark-border: rgba(255, 255, 255, 0.06);
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    body {
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: background .22s, color .22s;
+    }
+
+    [data-theme="dark"] body {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .card {
+      background: var(--card-light);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+      transition: all .22s;
+    }
+
+    [data-theme="dark"] .card {
+      background: var(--card-dark);
+      border: 1px solid var(--border-dark);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .alert-card-safe {
+      background: #ECFDF3;
+      border: 1px solid #C6F6D5;
+      color: #064E3B;
+    }
+
+    .alert-card-fire {
+      background: #FFF5F5;
+      border: 1px solid #FED7D7;
+      color: #7F1D1D;
+    }
+
+    [data-theme="dark"] .alert-card-safe {
+      background: var(--card-dark-2);
+      border: 1px solid rgba(43, 142, 78, 0.14);
+      color: var(--text-dark);
+    }
+
+    [data-theme="dark"] .alert-card-fire {
+      background: #3a2326;
+      border: 1px solid rgba(244, 122, 31, 0.12);
+      color: var(--text-dark);
+    }
+
+    /* ensure text readable in dark */
+    [data-theme="dark"] .text-gray-500,
+    [data-theme="dark"] .text-gray-400 {
+      color: rgba(249, 247, 247, 0.75) !important;
+    }
+
+    [data-theme="dark"] h1,
+    [data-theme="dark"] h2,
+    [data-theme="dark"] .card,
+    [data-theme="dark"] p {
+      color: var(--text-dark) !important;
+    }
+
+    /* Header */
+    header.main-header {
+      position: sticky;
+      top: 12px;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 18px 26px;
+      margin: 0 auto 18px;
+      max-width: 1800px;
+    }
+
+    header .left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    header .center {
+      flex: 1;
+      text-align: center;
+    }
+
+    header h1 {
+      font-weight: 700;
+      font-size: 24px;
+      margin: 0;
+      color: var(--logo-green);
+    }
+
+    [data-theme="dark"] header h1 {
+      color: var(--logo-green);
+    }
+
+    /* Map */
+    #map {
+      height: 520px;
+      border-radius: 10px;
+      width: 100%;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .blink {
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: .35;
+        transform: scale(1.25);
+      }
+    }
+
+    .marker-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+
+    /* menu panel */
+    .menu-panel {
+      position: absolute;
+      right: 12px;
+      top: 64px;
+      min-width: 220px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .menu-panel a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .menu-panel a:hover {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    /* menu header (XFIRO) */
+    .menu-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+      font-weight: 700;
+      background: transparent
+    }
+
+    [data-theme="dark"] .menu-header {
+      border-bottom-color: rgba(255, 255, 255, 0.03);
+    }
+
+    /* settings sidebar */
+    .settings-sidebar {
+      position: fixed;
+      right: -360px;
+      top: 0;
+      height: 100%;
+      width: 360px;
+      padding: 20px;
+      z-index: 200;
+      transition: right .34s cubic-bezier(.2, .9, .2, 1);
+      box-shadow: -18px 0 40px rgba(2, 6, 23, 0.35);
+    }
+
+    .settings-sidebar.active {
+      right: 0;
+    }
+
+    [data-theme="dark"] .settings-sidebar {
+      background: var(--card-dark);
+      border-left: 1px solid var(--border-dark);
+    }
+
+    /* buttons (theme aware) */
+    .btn {
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: 1px solid var(--btn-light-border);
+      background: var(--btn-light-bg);
+      color: var(--text-light);
+      transition: all .18s;
+    }
+
+    .btn.small {
+      padding: 4px 8px;
+      font-size: 0.8rem;
+    }
+
+    .btn.transparent {
+      background: transparent;
+      border: 1px solid transparent;
+    }
+
+    /* send / resolve specific */
+    .btn-send {
+      background: #E6F0FF;
+      border-color: #c7ddff;
+      color: #0b3a6b;
+    }
+
+    .btn-resolve {
+      background: #FFE9E9;
+      border-color: #f5c7c7;
+      color: #6b1b1b;
+    }
+
+    .btn-clear {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+      color: #111827;
+    }
+
+    /* dark mode button overrides */
+    [data-theme="dark"] .btn {
+      background: var(--btn-dark-bg);
+      border-color: var(--btn-dark-border);
+      color: var(--text-dark);
+    }
+
+    [data-theme="dark"] .btn-send {
+      background: rgba(26, 67, 111, 0.18);
+      border-color: rgba(60, 120, 200, 0.15);
+      color: #dbeeff;
+    }
+
+    [data-theme="dark"] .btn-resolve {
+      background: rgba(111, 41, 41, 0.16);
+      border-color: rgba(244, 122, 31, 0.08);
+      color: #ffdede;
+    }
+
+    [data-theme="dark"] .btn-clear {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.06);
+      color: #e6eef6;
+    }
+
+    /* alerts scroll */
+    #alert-list {
+      max-height: 520px;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    /* fullscreen responsiveness - content container */
+    .page-container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 20px;
+      width: 100%;
+    }
+
+    /* center header title visually even when left logo exists */
+    .header-wrapper {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+    }
+
+    .header-left {
+      justify-self: start
+    }
+
+    .header-center {
+      justify-self: center
+    }
+
+    .header-right {
+      justify-self: end
+    }
+
+    /* small screens */
+    @media (max-width: 1024px) {
+      #map {
+        height: 420px;
+      }
+
+      .settings-sidebar {
+        width: 100%;
+        right: -100%;
+      }
+    }
+  </style>
+</head>
+
+<body data-theme="">
+
+  <!-- HEADER -->
+  <div class="page-container">
+    <header class="card main-header">
+      <div class="header-wrapper" style="width:100%;">
+        <div class="header-left" style="display:flex;align-items:center;gap:12px;">
+          <img src="./logo.png" alt="logo" class="w-12 h-12 rounded" />
+        </div>
+
+        <div class="header-center">
+          <h1>Fire Monitoring Department</h1>
+        </div>
+
+        <div class="header-right" style="display:flex;align-items:center;gap:10px;">
+          <div class="text-right" style="margin-right:6px;">
+            <div id="auth-status" class="text-sm" style="color:var(--logo-green);">Connecting...</div>
+            <div id="current-time" class="text-xs text-gray-500">--</div>
+          </div>
+
+          <div style="position:relative;">
+            <button id="menu-btn" class="p-2 rounded bg-gray-100 dark:bg-gray-700"><i
+                class="fa-solid fa-bars"></i></button>
+            <div id="menu-panel" class="menu-panel hidden card" aria-hidden="true" style="right:0;">
+              <div class="menu-header">
+                <img src="./logo.png" alt="logo" class="w-7 h-7 rounded" />
+                <div style="font-weight:800; font-size:14px;">FIRO</div>
+              </div>
+              <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+              <a href="logs.html" target="_blank"><i class="fa-solid fa-list"></i> Logs</a>
+              <a href="analytics.html" target="_blank"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+              <a href="reports.html" target="_blank"><i class="fa-solid fa-file-lines"></i> Reports</a>
+              <a href="#" id="open-settings"><i class="fa-solid fa-gear"></i> Settings</a>
+              <hr class="my-2 opacity-30">
+              <a href="#" id="logout-btn" style="color:#dc2626;"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  </div>
+
+  <!-- DASHBOARD CONTENT -->
+  <div class="page-container">
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+      <div class="card p-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs uppercase" style="color:var(--logo-green);">Active Fires</div>
+            <div id="active-fires" class="text-3xl font-bold text-red-600">0</div>
+            <div class="text-xs text-gray-500 mt-1">Cameras reporting fire</div>
+          </div>
+          <i class="fa-solid fa-fire text-4xl" style="color:var(--logo-orange);opacity:0.9;"></i>
+        </div>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs uppercase" style="color:var(--logo-green);">Last Updated</div>
+            <div id="last-update" class="text-2xl font-semibold" style="color:var(--logo-orange);">--</div>
+            <div class="text-xs text-gray-500 mt-1">Most recent alert</div>
+          </div>
+          <i class="fa-solid fa-clock text-3xl" style="color:var(--logo-orange);opacity:0.9;"></i>
+        </div>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs uppercase" style="color:var(--logo-green);">Total Cameras</div>
+            <div id="total-cameras" class="text-3xl font-bold" style="color:var(--logo-green);">0</div>
+            <div class="text-xs text-gray-500 mt-1">Distinct camera locations</div>
+          </div>
+          <i class="fa-solid fa-camera text-3xl" style="color:var(--logo-green);opacity:0.9;"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map (left) and Alerts (right) -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold" style="color:var(--logo-green);">Cameras Map</h3>
+          <div class="flex items-center gap-4 text-sm">
+            <div><span class="legend-dot" style="background:var(--logo-green)"></span>SAFE</div>
+            <div><span class="legend-dot blink" style="background:red"></span>FIRE DETECTED</div>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mb-3">
+          <select id="camera-select"
+            class="px-3 py-2 border rounded text-sm flex-1 bg-gray-50 text-gray-800 dark:bg-[#0B1B2B] dark:text-[#E6EEF6] border-gray-300 dark:border-[rgba(255,255,255,0.08)] focus:outline-none focus:ring-2 focus:ring-[var(--logo-green)]">
+            <option value="">-- Select camera --</option>
+          </select>
+          <button id="camera-clear" class="btn btn-clear small">Clear filter</button>
+        </div>
+
+        <div id="map" class="card"></div>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg font-semibold" style="color:var(--logo-green);">Live Fire Alert Log</h3>
+          <button id="clear-logs" class="btn btn-clear small">Clear</button>
+        </div>
+
+        <div id="alert-list" class="overflow-y-auto" style="max-height:520px;">
+          <div class="text-sm text-gray-500 italic">Waiting for data...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Settings Sidebar -->
+  <div id="settings-sidebar" class="settings-sidebar card" aria-hidden="true">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold" style="color:var(--logo-green);">Settings</h2>
+      <button id="close-settings" class="p-2 rounded"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="section">
+      <label class="block text-sm font-medium mb-2">Theme</label>
+      <button id="toggle-theme" class="btn w-full text-left">
+        <i class="fa-solid fa-moon mr-3"></i> Toggle Dark / Light
+      </button>
+    </div>
+
+    <div class="section">
+      <label class="block text-sm font-medium mb-2">Display</label>
+      <button id="fullscreen-toggle" class="btn w-full text-left">
+        <i class="fa-solid fa-expand mr-3"></i> Toggle Fullscreen
+      </button>
+    </div>
+  </div>
+
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Firebase + App logic -->
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    // Firebase config (your existing config)
+    const firebaseConfig = {
+      apiKey: "AIzaSyC34U33lGP_rIzjR-dnTtLLkzdmLrSDKR8",
+      authDomain: "wildfire-monitoring-1ccca.firebaseapp.com",
+      projectId: "wildfire-monitoring-1ccca",
+      storageBucket: "wildfire-monitoring-1ccca.appspot.com",
+      messagingSenderId: "33997938009",
+      appId: "1:33997938009:web:eee397f8d518ca72434048"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    /* ================= AUTH GUARD (WORKING) ================= */
+onAuthStateChanged(auth, (user) => {
+  if (!user || user.isAnonymous) {
+    // 🔒 Block dashboard access
+    window.location.replace("login.html");
+    return;
+  }
+
+  // ✅ Logged-in user
+  const statusEl = document.getElementById("auth-status");
+  if (statusEl) {
+    statusEl.textContent = user.email;
+  }
+});
+
+
+
+
+
+    // Map init (Esri Satellite)
+    const map = L.map('map', { zoomControl: true }).setView([33.7380, 73.0845], 14);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri'
+    }).addTo(map);
+
+    // DOM refs
+    const activeFiresEl = document.getElementById('active-fires');
+    const totalCamerasEl = document.getElementById('total-cameras');
+    const lastUpdateEl = document.getElementById('last-update');
+    const alertList = document.getElementById('alert-list');
+    const cameraSelect = document.getElementById('camera-select');
+    const cameraClear = document.getElementById('camera-clear');
+
+    const settingsSidebar = document.getElementById('settings-sidebar');
+    const openSettingsBtn = document.getElementById('open-settings');
+    const closeSettingsBtn = document.getElementById('close-settings');
+    const menuBtn = document.getElementById('menu-btn');
+    const menuPanel = document.getElementById('menu-panel');
+    const toggleThemeBtn = document.getElementById('toggle-theme');
+    const fullscreenBtn = document.getElementById('fullscreen-toggle');
+    const clearLogsBtn = document.getElementById('clear-logs');
+
+    // maps markers keyed by camera_location (ensures one per camera)
+    const cameraMarkers = new Map();
+
+    // Helper to make icons
+    function makeIcon(color, blink = false) {
+      const el = document.createElement('div');
+      el.className = 'marker-dot' + (blink ? ' blink' : '');
+      el.style.background = color;
+      return L.divIcon({ html: el.outerHTML, className: '', iconSize: [20, 20], iconAnchor: [10, 10] });
+    }
+
+    const isFire = (entry) => (String(entry.detection_class || '').toLowerCase().includes('fire'));
+    const q = collection(db, 'artifacts', firebaseConfig.projectId, 'public', 'data', 'fire_logs');
+
+    // Real-time listener
+    onSnapshot(q, snap => {
+      const cameras = new Map();     // camera_location => {lat, lon, latestTS, fire, docs:[]}
+      const alerts = [];             // list of all docs
+      let latestTime = 0;
+
+      snap.forEach(d => {
+        const e = d.data(); e.id = d.id;
+        const lat = Number(e.coords_y);
+        const lon = Number(e.coords_x);
+        if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
+
+        alerts.push(e);
+        if (e.timestamp_ms && e.timestamp_ms > latestTime) latestTime = e.timestamp_ms;
+
+        const camName = e.camera_location || e.id;
+        const prev = cameras.get(camName) || { lat, lon, latestTS: 0, fire: false, docs: [] };
+        prev.lat = lat; prev.lon = lon;
+        prev.docs.push(e);
+        if (isFire(e) && String(e.status || '').toLowerCase() !== 'resolved') prev.fire = true;
+        if (e.timestamp_ms && e.timestamp_ms > prev.latestTS) prev.latestTS = e.timestamp_ms;
+        cameras.set(camName, prev);
+      });
+
+      // update metrics
+      const activeCount = Array.from(cameras.values()).filter(c => c.fire).length;
+      activeFiresEl.textContent = activeCount;
+      totalCamerasEl.textContent = cameras.size;
+      lastUpdateEl.textContent = latestTime ? new Date(latestTime).toLocaleString() : '--';
+
+      // Remove markers for cameras that no longer exist
+      cameraMarkers.forEach((marker, name) => {
+        if (!cameras.has(name)) {
+          try { map.removeLayer(marker); } catch (e) { }
+          cameraMarkers.delete(name);
+        }
+      });
+
+      // Add/update markers (one per camera_location)
+      cameras.forEach((cam, name) => {
+        const latlng = [cam.lat, cam.lon];
+        const color = cam.fire ? 'red' : '#2B8E4E';
+        const blink = cam.fire;
+        if (cameraMarkers.has(name)) {
+          const marker = cameraMarkers.get(name);
+          marker.setLatLng(latlng).setIcon(makeIcon(color, blink));
+          marker._popup && marker.setPopupContent(buildPopupHtml(name, cam));
+        } else {
+          const marker = L.marker(latlng, { icon: makeIcon(color, blink) }).addTo(map);
+          marker.bindPopup(buildPopupHtml(name, cam));
+          cameraMarkers.set(name, marker);
+        }
+      });
+
+      // Fit bounds to show all cameras if no camera filter active
+      const bounds = L.latLngBounds([]);
+      cameraMarkers.forEach(m => bounds.extend(m.getLatLng()));
+      if (bounds.isValid() && !cameraSelect.value) {
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }
+
+      // Sort alerts: active fires (not resolved) on top, then by timestamp desc
+      alerts.sort((a, b) => {
+        const aFire = isFire(a) && String(a.status || '').toLowerCase() !== 'resolved';
+        const bFire = isFire(b) && String(b.status || '').toLowerCase() !== 'resolved';
+        if (aFire && !bFire) return -1;
+        if (!aFire && bFire) return 1;
+        return (b.timestamp_ms || 0) - (a.timestamp_ms || 0);
+      });
+
+      // Render alert list
+      alertList.innerHTML = '';
+      if (alerts.length === 0) {
+        alertList.innerHTML = `<div class="text-sm text-gray-500 italic">No alerts</div>`;
+      } else {
+        alerts.forEach(a => {
+          const fire = isFire(a) && String(a.status || '').toLowerCase() !== 'resolved';
+          const card = document.createElement('div');
+          card.className = 'rounded p-3 mb-3 ' + (fire ? 'alert-card-fire' : 'alert-card-safe');
+
+          const top = document.createElement('div');
+          top.className = 'flex justify-between items-start';
+          top.innerHTML = `<div class="font-semibold">${escapeHtml(a.camera_location || a.id)}</div>
+            <div class="text-xs ${fire ? 'text-red-700' : 'text-green-700'}">${escapeHtml(a.detection_class)}${String(a.status || '').toLowerCase() === 'resolved' ? ' (resolved)' : ''}</div>`;
+
+          const coords = document.createElement('div');
+          coords.className = 'text-xs text-gray-500 mt-2';
+          coords.textContent = `Coords: ${a.coords_y}, ${a.coords_x}`;
+
+          const prob = document.createElement('div');
+          prob.className = 'text-xs text-gray-500';
+          prob.textContent = `Prob: ${a.fire_probability ?? 0}`;
+
+          const time = document.createElement('div');
+          time.className = 'text-xs text-gray-500 mb-2';
+          time.textContent = `Time: ${a.timestamp_str || (a.timestamp_ms ? new Date(a.timestamp_ms).toLocaleString() : '--')}`;
+
+          const actions = document.createElement('div');
+          actions.className = 'flex justify-end gap-2';
+
+          // Send button
+          const sendBtn = document.createElement('button');
+          sendBtn.className = 'btn btn-send small send';
+          sendBtn.textContent = 'Send';
+          sendBtn.dataset.lat = a.coords_y;
+          sendBtn.dataset.lon = a.coords_x;
+          sendBtn.dataset.name = a.camera_location || a.id;
+          actions.appendChild(sendBtn);
+
+          // Resolved button (only when active fire)
+          if (fire) {
+            const resBtn = document.createElement('button');
+            resBtn.className = 'btn btn-resolve small resolve';
+            resBtn.textContent = 'Resolved';
+            resBtn.dataset.id = a.id;
+            actions.appendChild(resBtn);
+          }
+
+          card.appendChild(top);
+          card.appendChild(coords);
+          card.appendChild(prob);
+          card.appendChild(time);
+          card.appendChild(actions);
+          alertList.appendChild(card);
+        });
+      }
+
+      // Populate camera dropdown (unique)
+      const sortedCams = Array.from(cameras.keys()).sort((x, y) => x.localeCompare(y));
+      cameraSelect.innerHTML = '<option value="">-- Select camera --</option>';
+      sortedCams.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        cameraSelect.appendChild(opt);
+      });
+    });
+
+    // Helper to build popup HTML for a camera marker
+    function buildPopupHtml(name, cam) {
+      const status = cam.fire ? 'FIRE DETECTED' : 'SAFE';
+      const t = cam.latestTS ? new Date(cam.latestTS).toLocaleString() : '--';
+      return `<div style="min-width:180px">
+                <strong>${escapeHtml(name)}</strong><br/>
+                ${cam.lat.toFixed(6)}, ${cam.lon.toFixed(6)}<br/>
+                <small>${status} • ${t}</small>
+              </div>`;
+    }
+    function escapeHtml(s) { return (s + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    // Delegated alert-list click handling (send / resolve)
+    alertList.addEventListener('click', async (ev) => {
+      const t = ev.target;
+      if (t.classList.contains('send')) {
+        const lat = t.dataset.lat, lon = t.dataset.lon, name = t.dataset.name;
+        const text = `🚨 Fire detected at ${encodeURIComponent(name)}%0ACoordinates: ${lat}, ${lon}%0AMap: https://www.google.com/maps?q=${lat},${lon}%0ATime: ${new Date().toLocaleString()}%0A%0A🔥 آگ لگی ہوئی ہے — براہ کرم فوری کارروائی کریں۔`;
+        // open whatsapp
+        window.open(`https://wa.me/923408226347?text=${text}`, '_blank');
+        return;
+      }
+      if (t.classList.contains('resolve')) {
+        const id = t.dataset.id;
+        if (!id) return;
+        const ok = confirm('Mark this alert as resolved and set camera SAFE?');
+        if (!ok) return;
+        try {
+          const ref = doc(db, 'artifacts', firebaseConfig.projectId, 'public', 'data', 'fire_logs', id);
+          await updateDoc(ref, { detection_class: "SAFE", fire_probability: 0, status: "resolved" });
+        } catch (err) {
+          console.error('Resolve failed', err);
+          alert('Failed to mark resolved (see console).');
+        }
+      }
+    });
+
+    // Camera selection focus
+    cameraSelect.addEventListener('change', () => {
+      const name = cameraSelect.value;
+      if (!name) return;
+      const marker = cameraMarkers.get(name);
+      if (marker) {
+        map.flyTo(marker.getLatLng(), 17, { duration: 0.6 });
+        try { marker.openPopup(); } catch (e) { }
+      }
+    });
+
+    cameraClear.addEventListener('click', () => {
+      cameraSelect.value = '';
+      const bounds = L.latLngBounds([]);
+      cameraMarkers.forEach(m => bounds.extend(m.getLatLng()));
+      if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 40] });
+    });
+
+    // menu open/close
+    menuBtn.addEventListener('click', () => {
+      menuPanel.classList.toggle('hidden');
+    });
+
+    // open settings sidebar
+    document.getElementById('open-settings').addEventListener('click', (e) => {
+      e.preventDefault();
+      menuPanel.classList.add('hidden');
+      settingsSidebar.classList.add('active');
+      settingsSidebar.setAttribute('aria-hidden', 'false');
+    });
+    document.getElementById('close-settings').addEventListener('click', () => {
+      settingsSidebar.classList.remove('active');
+      settingsSidebar.setAttribute('aria-hidden', 'true');
+    });
+
+    // theme + fullscreen
+    function applyTheme(t) {
+      document.body.setAttribute('data-theme', t === 'dark' ? 'dark' : '');
+      localStorage.setItem('fmd_theme', t);
+    }
+    let theme = localStorage.getItem('fmd_theme') || 'light';
+    applyTheme(theme);
+
+    toggleThemeBtn.addEventListener('click', () => {
+      theme = theme === 'light' ? 'dark' : 'light';
+      applyTheme(theme);
+    });
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    });
+
+    // clear logs (client-side clear)
+    clearLogsBtn.addEventListener('click', () => {
+      alertList.innerHTML = `<div class="text-sm text-gray-500 italic">Cleared. New alerts will appear here.</div>`;
+    });
+
+    // header time tick
+    setInterval(() => document.getElementById('current-time').textContent = new Date().toLocaleString(), 1000);
+
+  </script>
+</body>
+
+</html>
